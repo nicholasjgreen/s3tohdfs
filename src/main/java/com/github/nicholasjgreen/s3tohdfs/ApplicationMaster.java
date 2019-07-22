@@ -64,7 +64,7 @@ public class ApplicationMaster {
         Priority priority = Records.newRecord(Priority.class);
         priority.setPriority(0);
 
-        Path jarPath = new Path("/apps/s3tohdfs/s3tohdfs-0.1.0-jar-with-dependencies.jar");
+        Path jarPath = new Path(Constants.HdfsJarPath);
         jarPath = FileSystem.get(conf).makeQualified(jarPath);
 
         // Setup jar for Container
@@ -107,7 +107,7 @@ public class ApplicationMaster {
                 appContainer.setEnvironment(containerEnv);
                 String command = "$JAVA_HOME/bin/java" +
                         " -Xmx256M" +
-                        " com.github.nicholasjgreen.s3tohdfs.RetrieveFromS3" +
+                        " " + RetrieveFromS3.class.getName() +
                         " " + String.valueOf(allocatedContainers) +
                         " 1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stdout" +
                         " 2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stderr";

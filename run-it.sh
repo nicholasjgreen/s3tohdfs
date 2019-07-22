@@ -6,7 +6,7 @@ HDP_EXEC=$HADOOP_PREFIX/bin/hadoop
 HDFS_APPS_PATH=apps
 APP_NAME=s3tohdfs
 LOCAL_APP_PATH=./target
-JAR_NAME=s3tohdfs-0.1.0-jar-with-dependencies.jar
+JAR_NAME=s3tohdfs.jar
 CLIENT_CLASS=com.github.nicholasjgreen.s3tohdfs.Client
 
 # Set up clean folder, copy in image

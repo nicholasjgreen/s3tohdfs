@@ -37,7 +37,7 @@ public class Client {
     public void run(String[] args) throws Exception {
         System.out.println("Client.java says hello!");
         final int n = Integer.valueOf(args[0]);
-        Path jarPath = new Path("/apps/s3tohdfs/s3tohdfs-0.1.0-jar-with-dependencies.jar");
+        Path jarPath = new Path(Constants.HdfsJarPath);
         jarPath = FileSystem.get(conf).makeQualified(jarPath);
 
         // Create yarnClient
@@ -53,7 +53,7 @@ public class Client {
         ContainerLaunchContext amContainer = Records.newRecord(ContainerLaunchContext.class);
         String command = "$JAVA_HOME/bin/java" +
                 " -Xmx256M" +
-                " com.github.nicholasjgreen.s3tohdfs.ApplicationMaster" +
+                " " + ApplicationMaster.class.getName() +
                 " " + String.valueOf(n) +
                 " 1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stdout" +
                 " 2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stderr";
@@ -79,7 +79,7 @@ public class Client {
         // Finally, set-up ApplicationSubmissionContext for the application
         ApplicationSubmissionContext appContext =
                 app.getApplicationSubmissionContext();
-        appContext.setApplicationName("s3-to-hdfs"); // application name
+        appContext.setApplicationName(Constants.AppName); // application name
         appContext.setAMContainerSpec(amContainer);
         appContext.setResource(capability);
         appContext.setQueue("default"); // queue
