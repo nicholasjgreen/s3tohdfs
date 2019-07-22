@@ -1,5 +1,6 @@
 package com.github.nicholasjgreen.s3tohdfs;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.*;
 import java.util.Arrays;
@@ -18,6 +19,7 @@ import org.apache.hadoop.yarn.client.api.AMRMClient;
 import org.apache.hadoop.yarn.client.api.AMRMClient.ContainerRequest;
 import org.apache.hadoop.yarn.client.api.NMClient;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
+import org.apache.hadoop.yarn.util.Apps;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
 
@@ -40,6 +42,7 @@ public class ApplicationMaster {
                 System.out.println(url);
             }
         }
+        System.out.println("---[END]---");
 
         // Initialize clients to ResourceManager and NodeManagers
         Configuration conf = new YarnConfiguration();
@@ -61,7 +64,7 @@ public class ApplicationMaster {
         Priority priority = Records.newRecord(Priority.class);
         priority.setPriority(0);
 
-        Path jarPath = new Path("/apps/simple/s3tohdfs-0.1.0.jar");
+        Path jarPath = new Path("/apps/s3tohdfs/s3tohdfs-0.1.0-jar-with-dependencies.jar");
         jarPath = FileSystem.get(conf).makeQualified(jarPath);
 
         // Setup jar for Container
@@ -72,7 +75,7 @@ public class ApplicationMaster {
         Map<String, String> containerEnv = new HashMap<String, String>();
         setupContainerEnv(conf, containerEnv);
 
-        // Set up resource type requirements for Conatiner
+        // Set up resource type requirements for Container
         Resource capability = Records.newRecord(Resource.class);
         capability.setMemory(256);
         capability.setVirtualCores(1);
@@ -102,16 +105,14 @@ public class ApplicationMaster {
                 appContainer.setLocalResources(
                         Collections.singletonMap("simpleapp.jar", appMasterJar));
                 appContainer.setEnvironment(containerEnv);
-                appContainer.setCommands(
-                        Collections.singletonList(
-                                "$JAVA_HOME/bin/java" +
-                                        " -Xmx256M" +
-                                        " RetrieveFromS3" +
-                                        " " + String.valueOf(allocatedContainers) +
-                                        " 1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stdout" +
-                                        " 2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stderr"
-                        )
-                );
+                String command = "$JAVA_HOME/bin/java" +
+                        " -Xmx256M" +
+                        " com.github.nicholasjgreen.s3tohdfs.RetrieveFromS3" +
+                        " " + String.valueOf(allocatedContainers) +
+                        " 1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stdout" +
+                        " 2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stderr";
+                System.out.println("Command: " + command);
+                appContainer.setCommands(Collections.singletonList(command));
 
                 System.out.println("Launching container " + allocatedContainers);
                 nmClient.startContainer(container, appContainer);
@@ -158,18 +159,18 @@ public class ApplicationMaster {
         System.out.println("*** YARN_APPLICATION_CLASSPATH: " +
                 Arrays.asList(defaultYarnAppClasspath != null ? defaultYarnAppClasspath : new String[]{}));
 
-//        for (String c : conf.getStrings(
-//                YarnConfiguration.YARN_APPLICATION_CLASSPATH,
-//                YarnConfiguration.DEFAULT_YARN_APPLICATION_CLASSPATH)) {
-//            System.out.println("--> " + c);
-//            Apps.addToEnvironment(containerEnv, ApplicationConstants.Environment.CLASSPATH.name(),
-//                    c.trim());
-//        }
+        for (String c : conf.getStrings(
+                YarnConfiguration.YARN_APPLICATION_CLASSPATH,
+                YarnConfiguration.DEFAULT_YARN_APPLICATION_CLASSPATH)) {
+            System.out.println("--> " + c);
+            Apps.addToEnvironment(containerEnv, ApplicationConstants.Environment.CLASSPATH.name(),
+                    c.trim(), File.pathSeparator);
+        }
 
-//      Apps.addToEnvironment(appMasterEnv,
-//          Environment.CLASSPATH.name(),
-//          Environment.PWD.$() + File.separator + "*");
-
+      /*Apps.addToEnvironment(containerEnv,
+          ApplicationConstants.Environment.CLASSPATH.name(),
+          ApplicationConstants.Environment.PWD.$() + File.separator + "*");
+*/
         System.out.println("*** APP CONTAINER ENV: " +containerEnv);
     }
 

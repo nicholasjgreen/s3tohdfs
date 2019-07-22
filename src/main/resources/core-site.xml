@@ -5,6 +5,6 @@
         It ends up looking on the local filesystem. Can probably fix that though -->
   <property>
     <name>fs.defaultFS</name>
-    <value>hdfs://5a14d525cdc2:9000</value>
+    <value>hdfs://b979ef68a7af:9000</value>
   </property>
 </configuration>

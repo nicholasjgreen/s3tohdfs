@@ -37,7 +37,7 @@ public class Client {
     public void run(String[] args) throws Exception {
         System.out.println("Client.java says hello!");
         final int n = Integer.valueOf(args[0]);
-        Path jarPath = new Path("/apps/simple/s3tohdfs-0.1.0.jar");
+        Path jarPath = new Path("/apps/s3tohdfs/s3tohdfs-0.1.0-jar-with-dependencies.jar");
         jarPath = FileSystem.get(conf).makeQualified(jarPath);
 
         // Create yarnClient
@@ -50,18 +50,15 @@ public class Client {
         YarnClientApplication app = yarnClient.createApplication();
 
         // Set up the container launch context for the application master
-        ContainerLaunchContext amContainer =
-                Records.newRecord(ContainerLaunchContext.class);
-        amContainer.setCommands(
-                Collections.singletonList(
-                        "$JAVA_HOME/bin/java" +
-                                " -Xmx256M" +
-                                " ApplicationMaster" +
-                                " " + String.valueOf(n) +
-                                " 1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stdout" +
-                                " 2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stderr"
-                )
-        );
+        ContainerLaunchContext amContainer = Records.newRecord(ContainerLaunchContext.class);
+        String command = "$JAVA_HOME/bin/java" +
+                " -Xmx256M" +
+                " com.github.nicholasjgreen.s3tohdfs.ApplicationMaster" +
+                " " + String.valueOf(n) +
+                " 1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stdout" +
+                " 2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stderr";
+        System.out.println("Command: " + command);
+        amContainer.setCommands(Collections.singletonList(command));
 
         // Setup jar for ApplicationMaster
         LocalResource appMasterJar = Records.newRecord(LocalResource.class);
@@ -145,9 +142,9 @@ public class Client {
                     c.trim(), File.pathSeparator);
         }
 
-//      Apps.addToEnvironment(appMasterEnv,
-//          Environment.CLASSPATH.name(),
-//          Environment.PWD.$() + File.separator + "*");
+      //Apps.addToEnvironment(appMasterEnv,
+      //    Environment.CLASSPATH.name(),
+      //    Environment.PWD.$() + File.separator + "*");
 
         System.out.println("*** APP MASTER ENV: " +appMasterEnv);
     }
