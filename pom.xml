@@ -7,7 +7,7 @@
     <name>s3tohdfs</name>
     <url>http://maven.apache.org</url>
     <properties>
-        <hadoop.version>2.4.0</hadoop.version>
+        <hadoop.version>3.2.3</hadoop.version>
     </properties>
     <dependencies>
         <dependency>
